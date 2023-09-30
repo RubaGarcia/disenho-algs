@@ -18,7 +18,7 @@
              coin-values)))))
 
 (define (no-more? l)
-  (null? l))
+  (null? (cdr l)))
 
 (define (first-denomination l)
   (car l))
