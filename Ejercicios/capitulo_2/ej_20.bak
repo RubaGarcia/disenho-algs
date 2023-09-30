@@ -1,0 +1,27 @@
+#lang racket
+
+(define (same-parity x . list)
+  (if (pair? x)
+      null
+      (cons x null))
+  (if (null? list)
+      x
+      (if (even? x)
+          (if (both-even? (car x) (car list))
+              (same-parity (join x (car list)) (cdr list))
+              (same-parity x (cdr list)))
+          (if (both-odd? (car x) (car list))
+              (same-parity (join x (car list)) (cdr list))
+              (same-parity x (cdr list))))))
+
+
+(define (both-even? x y)
+  (and (even? x) (even? y)))
+
+(define (both-odd? x y)
+  (and (odd? x) (odd? y)))
+
+(define (join list elem)
+  (if (null? list)
+      (cons list (cons elem null))
+      (cons (car list) (join (cdr list) elem))))
