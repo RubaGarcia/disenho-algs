@@ -1,17 +1,31 @@
 #lang racket
 
-(define (reverse list) (reverse_aux list null))
-(define (reverse_aux list list2)
-  (if (null? list)
-      list2
-      (reverse_aux (cdr list) (cons (car list) list2))))
+
+(define (reverse list)
+  (if (null? (cdr list))
+      (car list)
+      (join (reverse (cdr list)) (car list))))
+
+(define (join elem1 elem2)
+  (if (list? elem1)
+      (if (list? elem1)
+          (cons elem2 null)
+          (cons (car elem1) (join (cdr elem1) elem2)))
+      (list elem1 elem2)))
 
 
 
-(define (deep-reverse l)
-  (if (pair? l)
-      (reverse l)
-      (cdr l)))
+(define (deep-reverse list)
+    (if (null? (cdr list))
+      (internal-reverse (car list))
+      (join (deep-reverse (cdr list)) (internal-reverse (car list)))))
+
+
+
+(define (internal-reverse elem)
+  (if (list? elem)
+    (deep-reverse elem)
+    elem))
 
 (define x 
   (list (list 1 2) (list 3 4)))
