@@ -8,10 +8,17 @@
 
 
 
-(define (deep-reverse l)
-  (if (pair? l)
-      (reverse l)
-      (cdr l)))
+(define (deep-reverse list) (deep-reverse-aux list null))
+
+(define (deep-reverse-aux list1 list2)
+  (if (null? list1)
+      list2
+      (deep-reverse-aux (cdr list1) (cons (check-nested-list (car list1)) list2))))
+
+(define (check-nested-list elem)
+  (if (list? elem)
+      (deep-reverse-aux elem null)
+      elem))
 
 (define x 
   (list (list 1 2) (list 3 4)))
