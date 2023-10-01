@@ -7,7 +7,6 @@
       (reverse_aux (cdr list) (cons (car list) list2))))
 
 
-
 (define (deep-reverse list) (deep-reverse-aux list null))
 
 (define (deep-reverse-aux list1 list2)
