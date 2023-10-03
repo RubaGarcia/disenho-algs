@@ -29,5 +29,3 @@
 (fold-left  list null (list 1 2 3))
 
 ;para que una op obtenga el mismo resultado tanto en fold-right como fold-left, dicha op deberá ser conmutativa
-;porque el orden de ejecucion de la operación variará en funcion de que método se use porque uno accede
-;a los elementos y opera con ellos de derecha a izquierda de la lista y el otro lo hace al reves
