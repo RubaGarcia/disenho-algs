@@ -18,7 +18,10 @@ fact = ('define', 'fact',
                             ('*', 'n', ('fact', ('-', 'n', 1))))))
 
 
-env = {'+': lambda x,y: x+y 
+env = {'+': lambda x,y: x+y,
+       '-': lambda x,y: x-y,
+       '*': lambda x,y: x*y,
+       'define': lambda x, y: ,
 
     }
 
