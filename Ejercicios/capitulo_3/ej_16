@@ -1,0 +1,18 @@
+#lang racket
+
+
+(define (count-pairs x)
+  (if (not (mpair? x))
+      0
+      (+ (count-pairs(mcar x))
+         (count-pairs(mcar x))
+         1)))
+
+
+(define n1 (mcons 2 null))
+(define n2 (mcons n1 n1))
+(define n3 (mcons n2 n2))
+(count-pairs n3)
+
+
+
