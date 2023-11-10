@@ -20,6 +20,14 @@
         )
   )
 
+;defining the environment
+(define environ (make-hash))
+(hash-set! environ '+ +)
+;seguir metiendo movidas, es tedioso
+
+
+
+
 (define (primitiva? exp)
   (or (number? exp) (boolean? exp)))
 
