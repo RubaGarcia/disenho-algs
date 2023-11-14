@@ -23,6 +23,9 @@
 ;defining the environment
 (define environ (make-hash))
 (hash-set! environ '+ +)
+(hash-set! environ '- -)
+(hash-set! environ '= =)
+
 ;seguir metiendo movidas, es tedioso
 
 
