@@ -6,19 +6,32 @@
 (define (seval exp environ)
   ; Evaluate a scheme expression
   (cond ((primitiva? exp) exp)  ; Primitive just "are". Return back
-        ((simbolo? exp) (car exp))  ; Symbols? Look up in the environment.
-        ((define? exp) ???)
+        ((simbolo? exp) (hash-ref environ (list exp)))  ; Symbols? Look up in the environment.
+        ((define? exp) (hash-set! environ (list (car (car (cdr exp)))) (lambda (cdr (car (cdr exp))) (car (cdr (cdr exp)))))) ;
+        ;si es un define, el car es "define", asi que nos da igual, lo siguiente (car del car del cdr) es la etiqueta, que va
+        ; de la mano del contenido (cdr (car (cdr)), y luego ya esta la funcion (car (cdr (cdr)))
         ((if? exp) ???)
         ((quote? exp) ???)
         ; ((cond? exp) ...)
         ; ((let ...))
         ; ((delay...))
         ((begin? exp) ???)
-        ((lambda? exp) ???)
+        ((lambda? exp) (hash-ref environ (list exp)))
         ((procedure-application? exp) ???)
         (else (error "Error desconocido"))
         )
   )
+
+;defining the environment
+(define environ (make-hash))
+(hash-set! environ (list '+) +)
+(hash-set! environ (list '-) -)
+(hash-set! environ (list '=) =)
+(hash-set! environ (list '*) *)
+(hash-set! environ (list 'lambda) ((car (cdr exp)) (car (cdr (cdr exp))))) 
+(hash-set! environ (list 'begin) begin)
+
+
 
 (define (primitiva? exp)
   (or (number? exp) (boolean? exp)))
@@ -93,11 +106,20 @@
 ; Evaluar todas las expresiones
 (define (begin? exp)
   (and (list? exp) (eq? (car exp) 'begin))
-  )
+)
 
 (define (begin-expressions exp)
   (cdr exp) ; Note: this returns a *list* of the expressions
   )
+
+; (lambda method)
+(define (lambda? exp)
+  (and (list? exp) (eq? (car exp) 'lambda))
+)
+
+(define (procedure-application? exp)
+  (list? exp)
+)
 
 
 ;; Varias pruebas para ver que es lo que tiene que ocurrir
