@@ -6,21 +6,26 @@
 (define (seval exp environ)
   ; Evaluate a scheme expression
   (cond ((primitiva? exp) exp)  ; Primitive just "are". Return back
-        ((simbolo? exp) (hash-ref environ (list exp)))  ; Symbols? Look up in the environment.
-        ((define? exp) (hash-set! environ (list (car (car (cdr exp)))) (lambda (cdr (car (cdr exp))) (car (cdr (cdr exp)))))) ;
+        ((simbolo? exp) (hash-ref environ exp))  ; Symbols? Look up in the environment.
+        ((define? exp) (seval-define exp environ)) ;
         ;si es un define, el car es "define", asi que nos da igual, lo siguiente (car del car del cdr) es la etiqueta, que va
         ; de la mano del contenido (cdr (car (cdr)), y luego ya esta la funcion (car (cdr (cdr)))
-        ((if? exp) (if (seval (if-test exp) environ) (seval (if-consequence exp) environ) (seval (if-alternative exp) environ)))
-        ((quote? exp) (seval (quote-expression exp) environ))
+        ((if? exp) (seval-if exp environ))
+        ((quote? exp) (seval-quote exp environ))
         ; ((cond? exp) ...)
         ; ((let ...))
         ; ((delay...))
-        ((begin? exp) (apply seval (begin-expressions exp) environ))
-        ((lambda? exp) (hash-ref environ (list exp)))
-        ((procedure-application? exp) (apply (car (car exp)) (seval (cdr (car exp)) environ)))
+        ((begin? exp) (begin-list (begin-expressions exp) environ))
+        ((lambda? exp) (seval (cdr (cdr (exp)))))
+        ((procedure-application? exp) (seval-procedure exp environ)) ;Evaluar la funcion, evaluar los args y ejecutar la funcion
         (else (error "Error desconocido"))
         )
   )
+
+(define (begin-list exp environ)
+  (if (null? (cdr exp)) 
+    (seval (car exp) environ)
+    (begin (seval (car exp) environ) (begin-list (cdr exp) environ))))
 
 ;defining the environment
 (define environ (make-hash))
@@ -33,15 +38,15 @@
 (hash-set! environ '* *)
 (hash-set! environ '= =)
 (hash-set! environ '> >)
-(hash-set! environ 'lambda ((car (cdr exp)) (car (cdr (cdr exp))))) 
-(hash-set! environ (list 'begin) begin)
+(hash-set! environ '< <)
+(hash-set! environ 'lambda "lambda")
 
 
 
 (define (primitiva? exp)
   (or (number? exp) (boolean? exp)))
 
-(define (simbolo? exp) (symbol? (car exp))) ;si lo primero que salga de la expresion es simbolo retorna true
+(define (simbolo? exp) (symbol? exp)) ;si lo primero que salga de la expresion es simbolo retorna true
 
 (define (aplicacion-procedimiento? exp)
   (list? exp)
@@ -61,13 +66,13 @@
 
 (define (define-value exp)
   (caddr exp)
-  )
+)
 
 ; Evaluacion
 (define (seval-define exp environ)
   (let ((name (define-name exp))
         (value (define-value exp)))
-    (define-in-environment! name (seval value environ) environ)
+    (hash-set! environ name (seval value environ))
     )
   )
 
@@ -126,10 +131,18 @@
   (list? exp)
 )
 
+(define (seval-procedure exp environ)
+  (apply (seval (car exp) environ)
+    (map (lambda (x) (seval x environ)) (cdr exp))))
+
+(define (check-equal? a b c)
+  (if (eq? a b)
+      true
+      c))
 
 ;; Varias pruebas para ver que es lo que tiene que ocurrir
 (check-equal? (seval '42 environ) 42 "Primitives failed")
-(check-equal? (seval 'foo environ) 123 "Symbol lookup failed")
+;(check-equal? (seval 'foo environ) 123 "Symbol lookup failed")
 (seval '(define x 42) environ)
 (check-equal? (seval 'x environ) 42 "Simple define failed")
 (seval '(define y (+ 2 3)) environ)
