@@ -10,25 +10,30 @@
         ((define? exp) (hash-set! environ (list (car (car (cdr exp)))) (lambda (cdr (car (cdr exp))) (car (cdr (cdr exp)))))) ;
         ;si es un define, el car es "define", asi que nos da igual, lo siguiente (car del car del cdr) es la etiqueta, que va
         ; de la mano del contenido (cdr (car (cdr)), y luego ya esta la funcion (car (cdr (cdr)))
-        ((if? exp) ???)
-        ((quote? exp) ???)
+        ((if? exp) (if (seval (if-test exp) environ) (seval (if-consequence exp) environ) (seval (if-alternative exp) environ)))
+        ((quote? exp) (seval (quote-expression exp) environ))
         ; ((cond? exp) ...)
         ; ((let ...))
         ; ((delay...))
-        ((begin? exp) ???)
+        ((begin? exp) (apply seval (begin-expressions exp) environ))
         ((lambda? exp) (hash-ref environ (list exp)))
-        ((procedure-application? exp) ???)
+        ((procedure-application? exp) (apply (car (car exp)) (seval (cdr (car exp)) environ)))
         (else (error "Error desconocido"))
         )
   )
 
 ;defining the environment
 (define environ (make-hash))
-(hash-set! environ (list '+) +)
-(hash-set! environ (list '-) -)
-(hash-set! environ (list '=) =)
-(hash-set! environ (list '*) *)
-(hash-set! environ (list 'lambda) ((car (cdr exp)) (car (cdr (cdr exp))))) 
+
+(hash-set! environ 'true true)
+(hash-set! environ 'false false) 
+(hash-set! environ '+ +)
+(hash-set! environ '- -)
+(hash-set! environ '= =)
+(hash-set! environ '* *)
+(hash-set! environ '= =)
+(hash-set! environ '> >)
+(hash-set! environ 'lambda ((car (cdr exp)) (car (cdr (cdr exp))))) 
 (hash-set! environ (list 'begin) begin)
 
 
