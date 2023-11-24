@@ -6,7 +6,7 @@
 (define (seval exp environ)
   ; Evaluate a scheme expression
   (cond ((primitiva? exp) exp)  ; Primitive just "are". Return back
-        ((simbolo? exp) (hash-ref environ exp))  ; Symbols? Look up in the environment.
+        ((simbolo? exp) (busca-entorno environ exp))  ; Symbols? Look up in the environment.
         ((define? exp) (seval-define exp environ)) ;
         ;si es un define, el car es "define", asi que nos da igual, lo siguiente (car del car del cdr) es la etiqueta, que va
         ; de la mano del contenido (cdr (car (cdr)), y luego ya esta la funcion (car (cdr (cdr)))
@@ -16,20 +16,26 @@
         ; ((let ...))
         ; ((delay...))
         ((begin? exp) (begin-list (begin-expressions exp) environ))
-        ((lambda? exp) (seval (cdr (cdr (exp)))))
+        ((lambda? exp) (make-procedure exp environ))
         ((procedure-application? exp) (seval-procedure exp environ)) ;Evaluar la funcion, evaluar los args y ejecutar la funcion
         (else (error "Error desconocido"))
         )
   )
+                           
 
 (define (begin-list exp environ)
   (if (null? (cdr exp)) 
     (seval (car exp) environ)
     (begin (seval (car exp) environ) (begin-list (cdr exp) environ))))
 
+(define (busca-entorno environ exp)
+  (if (hash-has-key? environ exp)
+  (hash-ref environ exp)
+  (busca-entorno (hash-ref environ 'environ) exp))
+  )
+
 ;defining the environment
 (define environ (make-hash))
-
 (hash-set! environ 'true true)
 (hash-set! environ 'false false) 
 (hash-set! environ '+ +)
@@ -42,6 +48,33 @@
 (hash-set! environ 'lambda "lambda")
 
 
+; Función para crear un procedimiento
+(define (make-procedure exp environ)
+  (lambda args
+    (seval (caddr exp) (extend-environment (cadr exp) args environ))
+  )
+)
+
+(define (extend-environment parameters args env)
+  (define new-env (make-hash))
+  (hash-set! new-env 'true true)
+  (hash-set! new-env 'false false) 
+  (hash-set! new-env '+ +)
+  (hash-set! new-env '- -)
+  (hash-set! new-env '= =)
+  (hash-set! new-env '* *)
+  (hash-set! new-env '= =)
+  (hash-set! new-env '> >)
+  (hash-set! new-env '< <)
+  (hash-set! new-env 'lambda "lambda")
+  (hash-set! new-env 'environ env)
+    ; Asociamos los parámetros con los argumentos en el nuevo entorno
+  (define n (length args))
+  (do ((i 0 (+ i 1)))
+    ((= i n) new-env)
+    (hash-set! new-env (list-ref parameters i) (list-ref args i))
+  )
+)
 
 (define (primitiva? exp)
   (or (number? exp) (boolean? exp)))
